@@ -6,13 +6,13 @@
 /*   By: dhanlon <dhanlon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 16:46:15 by dhanlon           #+#    #+#             */
-/*   Updated: 2025/10/05 08:57:58 by dhanlon          ###   ########.fr       */
+/*   Updated: 2025/10/05 10:37:27 by dhanlon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
-static char	*read_and_append(int fd, char *buffer)
+static char	*read_and_join(int fd, char *buffer)
 {
 	char	*temp;
 	char	*joined;
@@ -74,7 +74,7 @@ char	*get_next_line(int fd)
 		return (NULL);
 	while (!buffer || !ft_strchr(buffer, '\n'))
 	{
-		temp = read_and_append(fd, buffer);
+		temp = read_and_join(fd, buffer);
 		if (temp == buffer)
 			break ;
 		buffer = temp;
