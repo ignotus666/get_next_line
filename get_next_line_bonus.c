@@ -1,16 +1,16 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   get_next_line.c                                    :+:      :+:    :+:   */
+/*   get_next_line_bonus.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: dhanlon <dhanlon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 16:46:15 by dhanlon           #+#    #+#             */
-/*   Updated: 2025/10/05 08:57:58 by dhanlon          ###   ########.fr       */
+/*   Updated: 2025/10/05 09:17:16 by dhanlon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
-#include "get_next_line.h"
+#include "get_next_line_bonus.h"
 
 static char	*read_and_append(int fd, char *buffer)
 {
@@ -67,23 +67,23 @@ static char	*extract_line(char **buffer)
 
 char	*get_next_line(int fd)
 {
-	static char	*buffer;
+	static char	*buffer[FD_MAX];
 	char		*temp;
 
-	if (fd < 0 || BUFFER_SIZE <= 0)
+	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= FD_MAX)
 		return (NULL);
-	while (!buffer || !ft_strchr(buffer, '\n'))
+	while (!buffer[fd] || !ft_strchr(buffer[fd], '\n'))
 	{
-		temp = read_and_append(fd, buffer);
-		if (temp == buffer)
+		temp = read_and_append(fd, buffer[fd]);
+		if (temp == buffer[fd])
 			break ;
-		buffer = temp;
+		buffer[fd] = temp;
 	}
-	if (!buffer || *buffer == '\0')
+	if (!buffer[fd] || *buffer[fd] == '\0')
 	{
-		free(buffer);
-		buffer = NULL;
+		free(buffer[fd]);
+		buffer[fd] = NULL;
 		return (NULL);
 	}
-	return (extract_line(&buffer));
+	return (extract_line(&buffer[fd]));
 }
