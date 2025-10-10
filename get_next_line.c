@@ -6,53 +6,68 @@
 /*   By: dhanlon <dhanlon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 16:46:15 by dhanlon           #+#    #+#             */
-/*   Updated: 2025/10/05 10:37:27 by dhanlon          ###   ########.fr       */
+/*   Updated: 2025/10/10 16:06:06 by dhanlon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "get_next_line.h"
 
+/*Read BUFFER_SIZE-d chunks and append them to the currently held data.
+Free the old and new_data buffers and the returned (joined) data is updated below
+as buffer. If no new data is read (EOF or empty file), return buffer. It will
+result in updated_buff == buffer. If it's the first read, just return new_data.
+*/
+
 static char	*read_and_join(int fd, char *buffer)
 {
-	char	*temp;
+	char	*new_data;
 	char	*joined;
 	ssize_t	bytes_read;
 
-	temp = malloc(BUFFER_SIZE + 1);
-	if (!temp)
+	new_data = malloc(BUFFER_SIZE + 1);
+	if (!new_data)
 		return (NULL);
-	bytes_read = read(fd, temp, BUFFER_SIZE);
+	bytes_read = read(fd, new_data, BUFFER_SIZE);
 	if (bytes_read <= 0)
 	{
-		free(temp);
+		free(new_data);
 		return (buffer);
 	}
-	temp[bytes_read] = '\0';
+	new_data[bytes_read] = '\0';
 	if (!buffer)
-		return (temp);
-	joined = ft_strjoin(buffer, temp);
+		return (new_data);
+	joined = ft_strjoin(buffer, new_data);
 	free(buffer);
-	free(temp);
+	free(new_data);
 	return (joined);
 }
+
+/*Look for newline. If found -> extract substring from buffer[0] to nl_pos + 1
+							 -> Duplicate leftover data / free old buffer / 
+							  assign leftover to buffer.
+							  if no leftover
+							  	-> Free its assigned memory.
+								-> buffer = NULL so next read call starts from 0.
+					If no nl -> means read couldn't append data with nl so either
+					  			  EOF or empty. Dup and return as line*/
 
 static char	*extract_line(char **buffer)
 {
 	char	*line;
-	char	*newline_pos;
-	char	*temp;
+	char	*nl_pos;
+	char	*leftover_str;
 
-	newline_pos = ft_strchr(*buffer, '\n');
-	if (newline_pos)
+	nl_pos = ft_strchr(*buffer, '\n');
+	if (nl_pos)
 	{
-		line = ft_substr(*buffer, 0, newline_pos - *buffer + 1);
-		temp = ft_strdup(newline_pos + 1);
+		line = ft_substr(*buffer, 0, nl_pos - *buffer + 1);
+		leftover_str = ft_strdup(nl_pos + 1);
 		free(*buffer);
-		if (*temp)
-			*buffer = temp;
+		if (*leftover_str)
+			*buffer = leftover_str;
 		else
 		{
-			free(temp);
+			free(leftover_str);
 			*buffer = NULL;
 		}
 	}
@@ -68,22 +83,18 @@ static char	*extract_line(char **buffer)
 char	*get_next_line(int fd)
 {
 	static char	*buffer;
-	char		*temp;
+	char		*updated_buff;
 
 	if (fd < 0 || BUFFER_SIZE <= 0)
 		return (NULL);
 	while (!buffer || !ft_strchr(buffer, '\n'))
 	{
-		temp = read_and_join(fd, buffer);
-		if (temp == buffer)
+		updated_buff = read_and_join(fd, buffer);
+		if (updated_buff == buffer)
 			break ;
-		buffer = temp;
+		buffer = updated_buff;
 	}
-	if (!buffer || *buffer == '\0')
-	{
-		free(buffer);
-		buffer = NULL;
+	if (!buffer)
 		return (NULL);
-	}
 	return (extract_line(&buffer));
 }

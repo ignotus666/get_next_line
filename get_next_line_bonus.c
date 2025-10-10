@@ -6,7 +6,7 @@
 /*   By: dhanlon <dhanlon@student.42.fr>            +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 16:46:15 by dhanlon           #+#    #+#             */
-/*   Updated: 2025/10/05 10:48:06 by dhanlon          ###   ########.fr       */
+/*   Updated: 2025/10/10 12:16:15 by dhanlon          ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -14,45 +14,45 @@
 
 static char	*read_and_join(int fd, char *buffer)
 {
-	char	*temp;
+	char	*new_data;
 	char	*joined;
 	ssize_t	bytes_read;
 
-	temp = malloc(BUFFER_SIZE + 1);
-	if (!temp)
+	new_data = malloc(BUFFER_SIZE + 1);
+	if (!new_data)
 		return (NULL);
-	bytes_read = read(fd, temp, BUFFER_SIZE);
+	bytes_read = read(fd, new_data, BUFFER_SIZE);
 	if (bytes_read <= 0)
 	{
-		free(temp);
+		free(new_data);
 		return (buffer);
 	}
-	temp[bytes_read] = '\0';
+	new_data[bytes_read] = '\0';
 	if (!buffer)
-		return (temp);
-	joined = ft_strjoin(buffer, temp);
+		return (new_data);
+	joined = ft_strjoin(buffer, new_data);
 	free(buffer);
-	free(temp);
+	free(new_data);
 	return (joined);
 }
 
 static char	*extract_line(char **buffer)
 {
 	char	*line;
-	char	*newline_pos;
-	char	*temp;
+	char	*nl_pos;
+	char	*leftover_str;
 
-	newline_pos = ft_strchr(*buffer, '\n');
-	if (newline_pos)
+	nl_pos = ft_strchr(*buffer, '\n');
+	if (nl_pos)
 	{
-		line = ft_substr(*buffer, 0, newline_pos - *buffer + 1);
-		temp = ft_strdup(newline_pos + 1);
+		line = ft_substr(*buffer, 0, nl_pos - *buffer + 1);
+		leftover_str = ft_strdup(nl_pos + 1);
 		free(*buffer);
-		if (*temp)
-			*buffer = temp;
+		if (*leftover_str)
+			*buffer = leftover_str;
 		else
 		{
-			free(temp);
+			free(leftover_str);
 			*buffer = NULL;
 		}
 	}
@@ -68,22 +68,18 @@ static char	*extract_line(char **buffer)
 char	*get_next_line(int fd)
 {
 	static char	*buffer[FD_MAX];
-	char		*temp;
+	char		*updated_buff;
 
 	if (fd < 0 || BUFFER_SIZE <= 0 || fd >= FD_MAX)
 		return (NULL);
 	while (!buffer[fd] || !ft_strchr(buffer[fd], '\n'))
 	{
-		temp = read_and_join(fd, buffer[fd]);
-		if (temp == buffer[fd])
+		updated_buff = read_and_join(fd, buffer[fd]);
+		if (updated_buff == buffer[fd])
 			break ;
-		buffer[fd] = temp;
+		buffer[fd] = updated_buff;
 	}
-	if (!buffer[fd] || *buffer[fd] == '\0')
-	{
-		free(buffer[fd]);
-		buffer[fd] = NULL;
+	if (!buffer[fd])
 		return (NULL);
-	}
 	return (extract_line(&buffer[fd]));
 }

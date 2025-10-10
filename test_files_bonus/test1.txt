@@ -1,0 +1,10 @@
+File 1 - Line 1
+File 1 - Line 2
+File 1 - Line 3
+File 1 - Line 4
+File 1 - Line 5
+To submit bonuses for your project, you must include a bonus rule in your Makefile,
+which will add all the various headers, libraries, or functions that are not allowed in
+the main part of the project. Bonuses must be placed in _bonus.{c/h} files, unless
+the subject specifies otherwise. The evaluation of mandatory and bonus parts is
+conducted separately.
